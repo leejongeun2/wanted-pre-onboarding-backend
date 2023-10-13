@@ -37,3 +37,20 @@ def update_job_posting(request, posting_id):
     else:
         return JsonResponse(form.errors, status=400)
     
+
+
+@csrf_exempt
+@require_http_methods(["DELETE"])  # DELETE 요청만 허용
+def delete(request, posting_id):
+    try:
+        # 데이터베이스에서 해당 ID의 채용공고를 찾습니다.
+        job_posting = JobPosting.objects.get(pk=posting_id)
+    except JobPosting.DoesNotExist:
+        # 존재하지 않는 경우, 오류 메시지를 반환합니다.
+        return JsonResponse({'error': 'Job posting not found'}, status=404)
+
+    # 채용공고를 삭제합니다.
+    job_posting.delete()
+
+    # 성공 메시지를 반환합니다.
+    return JsonResponse({'message': 'Job posting deleted successfully'}, status=200)
