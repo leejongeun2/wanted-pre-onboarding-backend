@@ -6,6 +6,8 @@ import json
 from django.views.decorators.http import require_http_methods
 from .models import JobPosting
 from django.forms.models import model_to_dict
+from django.http import JsonResponse, Http404
+
 
 
 @csrf_exempt
@@ -82,6 +84,36 @@ def list_job_postings(request):
 
     # 결과를 JSON 형태로 반환합니다.
     return JsonResponse(job_postings_list, safe=False)  # safe=False는 non-dict 객체를 전달할 때 필요합니다.
+
+
+
+def job_posting_detail(request, posting_id):
+    try:
+        # 데이터베이스에서 ID에 해당하는 채용공고를 가져옵니다.
+       job_posting = JobPosting.objects.select_related('company_id').get(pk=posting_id)
+    except JobPosting.DoesNotExist:
+        # 해당하는 채용공고가 없으면 404 에러를 반환합니다.
+        raise Http404("Job posting does not exist")
+
+    # 채용공고 정보를 딕셔너리로 변환합니다.
+    job_posting_dict = model_to_dict(job_posting)
+    company_info = model_to_dict(job_posting.company_id, fields=["name", "location", "country"])
+
+    # 응답에 필요한 추가 필드를 설정합니다.
+    response_data = {
+        "채용공고_id": job_posting_dict['id'],
+        "회사명": company_info['name'],
+        "국가": company_info['country'],
+        "지역": company_info['location'],
+        "채용포지션": job_posting_dict['position'],
+        "채용보상금": job_posting_dict['compensation'],
+        "사용기술": job_posting_dict['technologies'],
+        "채용내용": job_posting_dict['description'],  # 채용 내용 필드를 응답에 포함시킵니다.
+    }
+
+    # 결과를 JSON 형태로 반환합니다.
+    return JsonResponse(response_data)
+
 
 
 
