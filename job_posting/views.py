@@ -85,7 +85,3 @@ def list_job_postings(request):
 
 
 
-
-
-
-

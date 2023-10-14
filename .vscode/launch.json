@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Django",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver",
+                "--noreload",  // 선택적; 자동 리로드를 비활성화합니다.
+                "--nothreading"  // 선택적; threading을 비활성화합니다.
+            ],
+            "django": true
+        }
+    ]
+}
