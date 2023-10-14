@@ -18,6 +18,11 @@ def apply_to_job(request):
         try:
             applicant_instance = Applicant.objects.get(pk=applicant_id)
             job_posting = JobPosting.objects.get(pk=job_posting_id)
+
+            existing_application = Application.objects.filter(applicant=applicant_instance).exists()
+            if existing_application:
+                return JsonResponse({'error': '이미 채용공고에 지원하셨습니다. 사용자는 한 번만 지원 가능합니다.'}, status=400)
+            
             application = Application.objects.create(applicant=applicant_instance, job_posting=job_posting)
 
             return JsonResponse({'message': '지원이 성공적으로 제출되었습니다.'}, status=201)
