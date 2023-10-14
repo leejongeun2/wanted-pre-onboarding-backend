@@ -99,6 +99,11 @@ def job_posting_detail(request, posting_id):
     job_posting_dict = model_to_dict(job_posting)
     company_info = model_to_dict(job_posting.company_id, fields=["name", "location", "country"])
 
+    # 같은 회사의 다른 채용공고 목록을 가져옵니다.
+    other_postings = job_posting.company_id.job_postings.exclude(id=posting_id).values_list('id', flat=True)
+    # values_list('id', flat=True)는 해당 쿼리셋에 있는 객체들의 'id' 필드 값만 리스트로 가져오라는 의미입니다.
+    # exclude(id=posting_id)는 현재 채용공고를 목록에서 제외하라는 의미입니다.
+
     # 응답에 필요한 추가 필드를 설정합니다.
     response_data = {
         "채용공고_id": job_posting_dict['id'],
@@ -109,6 +114,7 @@ def job_posting_detail(request, posting_id):
         "채용보상금": job_posting_dict['compensation'],
         "사용기술": job_posting_dict['technologies'],
         "채용내용": job_posting_dict['description'],  # 채용 내용 필드를 응답에 포함시킵니다.
+        "회사가올린다른채용공고": list(other_postings),
     }
 
     # 결과를 JSON 형태로 반환합니다.
