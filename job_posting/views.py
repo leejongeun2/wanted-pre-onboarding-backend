@@ -61,16 +61,16 @@ def delete(request, posting_id):
 
 
 def list_job_postings(request):
-    # 데이터베이스에서 모든 채용공고를 가져옵니다.
+
     job_postings = JobPosting.objects.all().select_related('company_id')  # 회사 정보를 함께 가져오기 위해 select_related 사용
 
-    # 채용공고 및 회사 정보를 JSON으로 변환할 수 있는 형태로 만듭니다.
+
     job_postings_list = []
     for jp in job_postings:
         job_posting_dict = model_to_dict(jp)
         company_info = model_to_dict(jp.company_id, fields=["name", "location", "country"])  # 회사의 이름, 위치, 국가 정보를 가져옵니다.
         
-        # 응답에 필요한 추가 필드를 설정합니다.
+
         response_data = {
             "채용공고_id": job_posting_dict['id'],
             "회사명": company_info['name'],
@@ -83,7 +83,7 @@ def list_job_postings(request):
 
         job_postings_list.append(response_data)
 
-    # 결과를 JSON 형태로 반환합니다.
+
     return JsonResponse(job_postings_list, safe=False)  # safe=False는 non-dict 객체를 전달할 때 필요합니다.
 
 
@@ -93,7 +93,6 @@ def job_posting_detail(request, posting_id):
         # 데이터베이스에서 ID에 해당하는 채용공고를 가져옵니다.
        job_posting = JobPosting.objects.select_related('company_id').get(pk=posting_id)
     except JobPosting.DoesNotExist:
-        # 해당하는 채용공고가 없으면 404 에러를 반환합니다.
         raise Http404("Job posting does not exist")
 
     # 채용공고 정보를 딕셔너리로 변환합니다.
@@ -118,7 +117,7 @@ def job_posting_detail(request, posting_id):
         "회사가올린다른채용공고": list(other_postings),
     }
 
-    # 결과를 JSON 형태로 반환합니다.
+
     return JsonResponse(response_data)
 
 
@@ -142,7 +141,7 @@ def search_job_postings(request):
         Q(technologies__icontains=query)
     ).select_related('company_id')
 
-    # 결과를 JSON으로 변환합니다.
+
     results = []
     for jp in job_postings:
         results.append({
@@ -155,7 +154,7 @@ def search_job_postings(request):
             "사용기술": jp.technologies,
         })
 
-    # 결과를 반환합니다.
+
     return JsonResponse(results, safe=False)
 
 
