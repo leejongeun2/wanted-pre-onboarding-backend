@@ -7,6 +7,7 @@ from django.views.decorators.http import require_http_methods
 from .models import JobPosting
 from django.forms.models import model_to_dict
 from django.http import JsonResponse, Http404
+from django.db.models import Q
 
 
 
@@ -121,5 +122,40 @@ def job_posting_detail(request, posting_id):
     return JsonResponse(response_data)
 
 
+
+def search_job_postings(request):
+    # 쿼리스트링에서 'search' 매개변수를 가져옵니다.
+    query = request.GET.get('search')
+
+    # 'search'가 제공되지 않았을 경우, 빈 응답을 반환할 수도 있습니다.
+    if not query:
+        return JsonResponse([], safe=False)
+
+    # 여러 필드에서 검색어를 찾기 위해 Q 객체를 사용합니다.
+    # icontains는 대소문자를 구분하지 않고 검색합니다.
+    job_postings = JobPosting.objects.filter(
+        Q(company_id__name__icontains=query) | 
+        Q(company_id__country__icontains=query) | 
+        Q(company_id__location__icontains=query) | 
+        Q(position__icontains=query) | 
+        Q(compensation__icontains=query) | 
+        Q(technologies__icontains=query)
+    ).select_related('company_id')
+
+    # 결과를 JSON으로 변환합니다.
+    results = []
+    for jp in job_postings:
+        results.append({
+            "채용공고_id": jp.id,
+            "회사명": jp.company_id.name,
+            "국가": jp.company_id.country,
+            "지역": jp.company_id.location,
+            "채용포지션": jp.position,
+            "채용보상금": jp.compensation,
+            "사용기술": jp.technologies,
+        })
+
+    # 결과를 반환합니다.
+    return JsonResponse(results, safe=False)
 
 
